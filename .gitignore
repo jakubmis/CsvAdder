@@ -1,0 +1,43 @@
+*.class
+*.log
+
+# sbt specific
+.cache
+.history
+.lib/
+dist/*
+target/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+
+# Scala-IDE specific
+.scala_dependencies
+.worksheet
+.idea
+.project
+.classpath
+.settings
+bin
+.cache-main
+.cache-tests
+.target
+
+# System specific
+.DS_Store
+*~
+
+# allows for local docker-compose configuration
+docker-compose.yml
+
+postgresql-9.4-1201.jdbc4.jar
+liquibase.jar
+liquibase.tar.gz
+
+#metals & vscode
+.metals/
+.bloop/
+.ammonite/
+.vscode/
+metals.sbt
