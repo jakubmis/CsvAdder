@@ -30,7 +30,6 @@ class WebsocketHttpServer[F[_] : Async](fileStreams: Stream[F, (Int, Int)]) {
         fileStreams
           .filter(_._1 == number)
           .map { case (_, y) => y }
-          .fold(0)(_ + _)
           .map(_.toString)
   }
 

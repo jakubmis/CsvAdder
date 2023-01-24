@@ -2,11 +2,9 @@ package file
 
 import cats.effect.kernel.Async
 import cats.implicits.catsSyntaxApplicativeId
-import fs2.{Pull, Stream}
-import fs2.io.file.{Files, Path}
-import cats.data.{NonEmptyList => Nel}
 import com.typesafe.scalalogging.LazyLogging
-import fs2._
+import fs2.io.file.{Files, Path}
+import fs2.{Pull, Stream, _}
 
 class FileReader[F[_] : Async](config: Int) extends LazyLogging {
   def fileStream(resource: String): F[Stream[F, (Int, Int)]] = {
@@ -15,23 +13,16 @@ class FileReader[F[_] : Async](config: Int) extends LazyLogging {
       .groupAdjacentBy(_.toInt % config)
       .map { case (index, chunk) => (index, chunk.foldLeft(0)(_ + _.toInt)) }
       .through(groupByKey)
-      .map { case (index, list) => (index, list.foldLeft(0)(_ + _)) }
+      .map { case (index, list) => (index, list.sum) }
       .pure[F]
   }
 
-  def groupByKey[K, V]: Pipe[F, (K, V), (K, Nel[V])] = {
-    def iterate(state: Map[K, List[V]]): Stream[F, (K, V)] => Pull[F, (K, Nel[V]), Unit] = _.pull.uncons1.flatMap {
+  def groupByKey[K, V]: Pipe[F, (K, V), (K, List[V])] = {
+    def iterate(state: Map[K, List[V]]): Stream[F, (K, V)] => Pull[F, (K, List[V]), Unit] = _.pull.uncons1.flatMap {
       case Some(((key, num), tail)) =>
         iterate(state.updated(key, num :: state.getOrElse(key, Nil)))(tail)
       case None =>
-        val chunk = Chunk.vector {
-          state
-            .toVector
-            .collect { case (key, last :: revInit) =>
-              val group = Nel.ofInitLast(revInit.reverse, last)
-              key -> group
-            }
-        }
+        val chunk = Chunk.vector(state.toVector)
         Pull.output(chunk) >> Pull.done
     }
     iterate(Map.empty)(_).stream
