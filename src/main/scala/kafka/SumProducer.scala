@@ -22,6 +22,6 @@ class SumProducer[F[_] : Async](queue: Queue[F, QueueMessage]) {
 
 object SumProducer {
   def apply[F[_] : Async](queue: Queue[F, QueueMessage]): F[SumProducer[F]] = {
-   new SumProducer(queue).pure[F]
+    new SumProducer(queue).pure[F]
   }
 }

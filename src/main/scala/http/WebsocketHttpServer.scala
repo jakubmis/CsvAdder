@@ -27,10 +27,10 @@ class WebsocketHttpServer[F[_] : Async](fileStreams: Stream[F, (Int, Int)]) {
 
   def pipe(number: Int): Pipe[F, String, String] = {
     _ =>
-        fileStreams
-          .filter(_._1 == number)
-          .map { case (_, y) => y }
-          .map(_.toString)
+      fileStreams
+        .filter(_._1 == number)
+        .map { case (_, y) => y }
+        .map(_.toString)
   }
 
   val wsRoutes: WebSocketBuilder2[F] => HttpRoutes[F] =

@@ -25,6 +25,7 @@ class FileReader[F[_] : Async](config: Int) extends LazyLogging {
         val chunk = Chunk.vector(state.toVector)
         Pull.output(chunk) >> Pull.done
     }
+
     iterate(Map.empty)(_).stream
   }
 }
