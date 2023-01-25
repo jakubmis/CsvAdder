@@ -15,17 +15,14 @@ object Main extends IOApp with LazyLogging {
   override def run(args: List[String]): IO[ExitCode] = {
     logger.info("Starting CsvAdder application")
     for {
-      reader <- FileReader[IO](config)
-      fileStreams <- reader.fileStream("src/main/resources/numbers.csv")
-      queue <- Queue.bounded[IO, QueueMessage](100)
-      _ <- fileStreams.evalTap { case (index, value) => queue.offer(QueueMessage(index, value)) }.pure[IO]
-      sumProducer <- SumProducer[IO](queue)
+      reader          <- FileReader[IO](config)
+      fileStreams     <- reader.fileStream("src/main/resources/numbers.csv")
+      queue           <- Queue.bounded[IO, QueueMessage](100)
+      _               <- fileStreams.evalTap { case (index, value) => queue.offer(QueueMessage(index, value)) }.pure[IO]
+      sumProducer     <- SumProducer[IO](queue)
       websocketServer <- WebsocketHttpServer[IO](fileStreams)
       _ = logger.info("Websocket started")
-      exitCode <- Stream(fileStreams, websocketServer.stream, sumProducer.stream)
-        .parJoinUnbounded
-        .compile
-        .drain
+      exitCode <- Stream(fileStreams, websocketServer.stream, sumProducer.stream).parJoinUnbounded.compile.drain
         .as(ExitCode.Success)
     } yield exitCode
   }

@@ -6,7 +6,7 @@ import com.typesafe.scalalogging.LazyLogging
 import fs2.io.file.{Files, Path}
 import fs2.{Pull, Stream, _}
 
-class FileReader[F[_] : Async](config: Int) extends LazyLogging {
+class FileReader[F[_]: Async](config: Int) extends LazyLogging {
   def fileStream(resource: String): F[Stream[F, (Int, Int)]] = {
     Files[F]
       .readUtf8Lines(Path(resource))
@@ -31,7 +31,7 @@ class FileReader[F[_] : Async](config: Int) extends LazyLogging {
 }
 
 object FileReader {
-  def apply[F[_] : Async](config: Int): F[FileReader[F]] = {
+  def apply[F[_]: Async](config: Int): F[FileReader[F]] = {
     new FileReader[F](config).pure[F]
   }
 }

@@ -19,21 +19,19 @@ import sttp.tapir.{CodecFormat, PublicEndpoint, endpoint, query, webSocketBody}
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.Duration
 
-
-class WebsocketHttpServer[F[_] : Async](fileStreams: Stream[F, (Int, Int)]) {
+class WebsocketHttpServer[F[_]: Async](fileStreams: Stream[F, (Int, Int)]) {
 
   private val wsEndpoint: PublicEndpoint[Int, Unit, Pipe[F, String, String], Fs2Streams[F] with WebSockets] =
-    endpoint
-      .get
+    endpoint.get
       .in("")
       .in(query[Int]("number"))
       .out(webSocketBody[String, CodecFormat.TextPlain, String, CodecFormat.TextPlain](Fs2Streams[F]))
 
-  private def pipe(number: Int): Pipe[F, String, String] = {
-    _ => fileStreams
-        .filter(_._1 == number)
-        .map { case (_, y) => y }
-        .map(_.toString)
+  private def pipe(number: Int): Pipe[F, String, String] = { _ =>
+    fileStreams
+      .filter(_._1 == number)
+      .map { case (_, y) => y }
+      .map(_.toString)
   }
 
   private val wsRoutes: WebSocketBuilder2[F] => HttpRoutes[F] =
@@ -46,7 +44,8 @@ class WebsocketHttpServer[F[_] : Async](fileStreams: Stream[F, (Int, Int)]) {
     }
 
   val stream: Stream[F, ExitCode] =
-    BlazeServerBuilder.apply[F]
+    BlazeServerBuilder
+      .apply[F]
       .withConnectorPoolSize(10)
       .withoutBanner
       .withResponseHeaderTimeout(Duration(10, TimeUnit.SECONDS))
@@ -57,7 +56,7 @@ class WebsocketHttpServer[F[_] : Async](fileStreams: Stream[F, (Int, Int)]) {
 }
 
 object WebsocketHttpServer {
-  def apply[F[_] : Async](fileStreams: Stream[F, (Int, Int)]): F[WebsocketHttpServer[F]] = {
+  def apply[F[_]: Async](fileStreams: Stream[F, (Int, Int)]): F[WebsocketHttpServer[F]] = {
     new WebsocketHttpServer(fileStreams).pure[F]
   }
 }
