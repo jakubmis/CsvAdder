@@ -1,16 +1,15 @@
 package http
 
-import cats.effect.{ExitCode, Sync}
+import cats.effect.ExitCode
 import cats.effect.kernel.Async
 import cats.implicits.catsSyntaxApplicativeId
 import fs2.{Pipe, Stream}
-import io.circe.Json
-import org.http4s.dsl.io.{->, /, GET, Root}
-import org.http4s.HttpRoutes
 import org.http4s.blaze.server.BlazeServerBuilder
+import org.http4s.dsl.io.{->, /, GET, Root}
 import org.http4s.server.Router
 import org.http4s.server.websocket.WebSocketBuilder2
-import sttp.apispec.asyncapi.AsyncAPI
+import org.http4s.{HttpRoutes, Response, Status}
+import sttp.apispec.asyncapi.circe.yaml._
 import sttp.capabilities.WebSockets
 import sttp.capabilities.fs2.Fs2Streams
 import sttp.tapir.docs.asyncapi.AsyncAPIInterpreter
@@ -19,8 +18,6 @@ import sttp.tapir.{CodecFormat, PublicEndpoint, endpoint, query, webSocketBody}
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.Duration
-import sttp.apispec.asyncapi.circe.yaml._
-import org.http4s.{HttpRoutes, Response, Status}
 
 
 class WebsocketHttpServer[F[_] : Async](fileStreams: Stream[F, (Int, Int)]) {
