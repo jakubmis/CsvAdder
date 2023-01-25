@@ -17,7 +17,7 @@ class FileReader[F[_] : Async](config: Int) extends LazyLogging {
       .pure[F]
   }
 
-  def groupByKey[K, V]: Pipe[F, (K, V), (K, List[V])] = {
+  private def groupByKey[K, V]: Pipe[F, (K, V), (K, List[V])] = {
     def iterate(state: Map[K, List[V]]): Stream[F, (K, V)] => Pull[F, (K, List[V]), Unit] = _.pull.uncons1.flatMap {
       case Some(((key, num), tail)) =>
         iterate(state.updated(key, num :: state.getOrElse(key, Nil)))(tail)

@@ -8,7 +8,7 @@ import model.QueueMessage
 
 class SumProducer[F[_] : Async](queue: Queue[F, QueueMessage]) {
 
-  val producerSettings: ProducerSettings[F, Int, Int] = ProducerSettings[F, Int, Int]
+  private val producerSettings: ProducerSettings[F, Int, Int] = ProducerSettings[F, Int, Int]
     .withBootstrapServers("localhost:29092")
 
   val stream: fs2.Stream[F, F[ProducerResult[Unit, Int, Int]]] = KafkaProducer
